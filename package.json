@@ -37,7 +37,9 @@
     "cli",
     "safe migrate",
     "nodejs",
-    "psm"
+    "psm",
+    "sql",
+    "typescript"
   ],
   "devDependencies": {
     "@types/yaml": "^1.9.6",
