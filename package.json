@@ -1,6 +1,6 @@
 {
   "name": "@prisma-psm/core",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "PSM - Prisma SAFE MIGRATE",
   "main": "src/index.js",
   "scripts": {
@@ -13,7 +13,19 @@
   },
   "dependencies": {
     "@prisma/generator-helper": "^6.13.0",
+    "deepmerge": "^4.3.1",
+    "dotenv": "^17.2.1",
     "json5": "^2.2.3",
-    "nanoid": "^5.1.5"
+    "moment": "^2.30.1",
+    "nanoid": "^5.1.5",
+    "yaml": "^2.8.1"
+  },
+  "bin": {
+    "psm": "src/launcher/index.js"
+  },
+  "devDependencies": {
+    "@types/yaml": "^1.9.6",
+    "@types/yargs": "^17.0.33",
+    "yargs": "^18.0.0"
   }
 }

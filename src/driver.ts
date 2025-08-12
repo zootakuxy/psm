@@ -98,7 +98,8 @@ export interface ModelOptions {
 
 export interface MigrationOptions {
     sql:string
-    url:string
+    url:string,
+    label:string
 }
 
 
