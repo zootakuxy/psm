@@ -30,7 +30,7 @@ In your `schema.prisma` file, configure the PSM generator to generate the SQL fi
 
 ```prisma
 generator psm {
-provider = "psm migrate generate"
+provider = "psm generate"
 output = "./psm/"
 driver = "@prisma-psm/pg"
 url = env("DATABASE_URL")
@@ -58,7 +58,7 @@ url = env("DATABASE_URL")
 - Only generates both files, without validating.
 - Updates the `psm.yml` file with migration information, such as status, driver, URL, schema, and history.
 
-### 2. Applying the migration (`psm migrate commit`)
+### 2. Applying the migration (`psm commit`)
 
 - Validates the migration again by running `migration.next.check.sql`.
 - If validated:
@@ -69,7 +69,7 @@ url = env("DATABASE_URL")
 - Registers the applied migration in the database for control.
 - If failure occurs, abort and display the error.
 
-### 3. Deploy to production (`psm migrate deploy`)
+### 3. Deploy to production (`psm deploy`)
 
 - Applies all pending revisions stored in the `revision/` folder incrementally. - Ensures the database is always synchronized with the migration history.
 
@@ -121,10 +121,10 @@ DATABASE_URL="postgresql://username:password@localhost:5432/yourbank"
 ## Main Commands
 
 | Command | Description |
-|-----------------------|------------------------------------------------------------------------|
+|----------------------|------------------------------------------------------------------------|
 | `npx prisma generate` | Generates the migration files in the `next` folder and validates them (if `DATABASE_URL` is set). |
-| `psm migrate commit` | Validates and applies the next migration. Creates the final revision in the `revision/` folder. |
-| `psm migrate deploy` | Applies all pending migrations from the `revision/` folder in the correct order. |
+| `psm commit` | Validates and applies the next migration. Creates the final revision in the `revision/` folder. |
+| `psm deploy` | Applies all pending migrations from the `revision/` folder in the correct order. |
 
 ---
 
@@ -135,10 +135,10 @@ DATABASE_URL="postgresql://username:password@localhost:5432/yourbank"
 npx prisma generate
 
 # Validate and apply the generated migration
-psm migrate commit
+psm commit
 
 # Apply all pending migrations in production
-psm migrate deploy
+psm deploy
 ```
 
 ---

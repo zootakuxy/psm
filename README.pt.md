@@ -31,7 +31,7 @@ No seu arquivo `schema.prisma`, configure o gerador do PSM para gerar os arquivo
 
 ```prisma
 generator psm {
-  provider = "psm migrate generate"
+  provider = "psm generate"
   output   = "./psm/"
   driver   = "@prisma-psm/pg"
   url      = env("DATABASE_URL")
@@ -61,7 +61,7 @@ generator psm {
     - Apenas gera ambos os arquivos, sem validar.
 - Atualiza o arquivo `psm.yml` com informações da migração, como status, driver, URL, esquema, e histórico.
 
-### 2. Aplicação da migração (`psm migrate commit`)
+### 2. Aplicação da migração (`psm commit`)
 
 - Valida novamente a migração executando `migration.next.check.sql`.
 - Se validado:
@@ -72,7 +72,7 @@ generator psm {
     - Registra no banco a migração aplicada para controle.
 - Se falha, aborta e mostra o erro.
 
-### 3. Deploy em produção (`psm migrate deploy`)
+### 3. Deploy em produção (`psm deploy`)
 
 - Aplica todas as revisões pendentes armazenadas na pasta `revision/` de forma incremental.
 - Garante que o banco esteja sempre sincronizado com o histórico de migrações.
@@ -129,8 +129,8 @@ DATABASE_URL="postgresql://usuario:senha@localhost:5432/seubanco"
 | Comando               | Descrição                                                                              |
 |-----------------------|----------------------------------------------------------------------------------------|
 | `npx prisma generate` | Gera os arquivos de migração na pasta `next` e valida (se `DATABASE_URL` configurada). |
-| `psm migrate commit`  | Valida e aplica a próxima migração. Cria revisão definitiva na pasta `revision/`.      |
-| `psm migrate deploy`  | Aplica todas as migrações pendentes da pasta `revision/` na ordem correta.             |
+| `psm commit`  | Valida e aplica a próxima migração. Cria revisão definitiva na pasta `revision/`.      |
+| `psm deploy`  | Aplica todas as migrações pendentes da pasta `revision/` na ordem correta.             |
 
 ---
 
@@ -141,10 +141,10 @@ DATABASE_URL="postgresql://usuario:senha@localhost:5432/seubanco"
 npx prisma generate
 
 # Validar e aplicar a migração gerada
-psm migrate commit
+psm commit
 
 # Aplicar todas as migrações pendentes em produção
-psm migrate deploy
+psm deploy
 ```
 
 ---
