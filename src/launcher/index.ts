@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 require("source-map-support").install();
-
-import Path from "path";
-
-require("source-map-support").install();
+import * as Path from "node:path";
 import yargs from "yargs";
 
 let ss = yargs(process.argv.slice(2))

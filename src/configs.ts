@@ -3,6 +3,7 @@ export interface PSMConfigFile {
         migration: string
         driver: string
         url: string
+        sys: string
         output: string
         schema: string
     },
@@ -12,6 +13,7 @@ export interface PSMConfigFile {
         messages: string[]
     },
     migration?: {
+        revision: string,
         instate: string,
         preview: string,
         label: string,

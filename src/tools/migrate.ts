@@ -19,7 +19,6 @@ export interface MigrateOptions {
 }
 export async function migrate( opts:MigrateOptions ) {
     require('dotenv').config();
-    console.log( opts )
     if( opts.generate ) {
         let command = opts["generate-command"];
         if( !command) command = "prisma generate"
@@ -41,8 +40,12 @@ export async function migrate( opts:MigrateOptions ) {
 
     const home = Path.dirname( schema );
     const psm_yml = Path.join( home, "psm.yml" );
+    const psm_sql = Path.join( home, "psm.sql");
     if( !fs.existsSync( psm_yml ) ) {
         return console.error( "Migrate error: psm.yml file not found!" );
+    }
+    if( !fs.existsSync( psm_sql ) ) {
+        return console.error( "Migrate error: psm.sql file not found!" );
     }
 
     console.log(`PSM migrate using ${psm_yml}`);
@@ -63,9 +66,19 @@ export async function migrate( opts:MigrateOptions ) {
         url: process.env[psm.psm.url],
         migrate: fs.readFileSync( next ).toString(),
         check: fs.readFileSync( check ).toString(),
+        core: fs.readFileSync( psm_sql ).toString(),
     });
 
-    let result = await migrator.test();
+    let result = await migrator.core();
+    if( !result.success ) {
+        console.error( result.error );
+        result.messages.forEach( error => {
+            console.error( error );
+        });
+        return console.error( "Migrate error: Core failed!" );
+    }
+
+    result = await migrator.test();
     if( !result.success ) {
         console.error( result.error );
         result.messages.forEach( error => {
@@ -73,6 +86,7 @@ export async function migrate( opts:MigrateOptions ) {
         });
         return console.error( "Migrate error: Check shadow failed!" );
     }
+
 
     result = await migrator.migrate();
     if( !result.success ) {
@@ -80,15 +94,21 @@ export async function migrate( opts:MigrateOptions ) {
         result.messages.forEach( error => {
             console.error( error );
         });
-        return console.error( "Migrate error: Check shadow failed!" );
+        return console.error( "Migrate error: Commit migration failed!" );
     }
 
     const moment = require('moment');
     let label = "";
-    if( !!opts.label ) label = ` - ${sanitizeLabel( opts.label )}`
+    if( !!opts.label ) label = ` - ${sanitizeLabel( opts.label )}`;
+    let preview:PSMConfigFile;
+    const last = getLatestFolder( Path.join( home, `psm/revisions/schema`));
+    if( !!last ){
+        preview = yaml.parse( fs.readFileSync( Path.join( home, "psm/revisions/schema", last, "psm.yml")).toString() ) as  PSMConfigFile;
+    }
     psm.migration = {
+        revision: `${ moment().format( 'YYYYMMDDHHmmss' ) } - ${psm.psm.migration}`,
         instate: moment().format( 'YYYYMMDDHHmmss' ),
-        preview: getLatestFolder( Path.join( home, `psm/revisions/schema`)),
+        preview: preview?.migration.revision,
         label: opts.label
     }
     const nextRev = Path.join( home, `psm/revisions/schema/${psm.migration.instate}${label}`);

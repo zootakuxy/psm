@@ -1,15 +1,22 @@
 import {CommandModule} from "yargs";
-import {DeployOptions} from "../../tools/deploy";
+import { DeployOptions, deploy} from "../../tools/deploy";
 
 
 const command:CommandModule<DeployOptions, DeployOptions> = {
-    command: "migrate deploy",
-    describe: "Deploy to production environment",
+    command: "deploy",
+    describe: "Deploy all commited revision into server",
     builder: args => {
+        args.options( "schema", {
+            type: "string",
+            alias: "s"
+        })
         return args;
     },
     handler:( argv) =>{
-        console.log( "TODO - psm migrate deploy ainda não esta implementado")
+        deploy( argv ).then( value => {
+        }).catch( reason => {
+            console.error( reason );
+        })
     }
 }
 

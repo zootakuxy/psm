@@ -80,13 +80,14 @@ export function generate(){
                     migration: migration,
                     shadow: `psm_shadow_${rand()}`,
                     backup: "backup",
-                    sys: "sys",
+                    sys: configs.sys||"sys",
                 };
 
                 const generator = driver.generator(opts);
 
                 const check = generator.check();
                 const migrate = generator.migrate();
+                const core = generator.core();
 
                 write( check, next, "migration.next.check.sql" );
 
@@ -94,15 +95,17 @@ export function generate(){
                 let test:PSMMigrationResult|undefined;
 
                 if( !!url ) {
-                    test = await driver.migrator({
+                    const migrator =  driver.migrator({
                         migrate: migrate,
                         check: check,
+                        core: core,
                         url: url as string
-                    }).test();
+                    });
+
+                    await migrator.core();
+
+                    test = await migrator.test();
                 }
-
-
-                console.log( test );
 
                 if( !configs.url ){
                     write( migrate, next, "migration.next.sql" );
@@ -132,6 +135,7 @@ export function generate(){
                         url: configs.url,
                         output: output,
                         schema: options.schemaPath,
+                        sys: configs.sys||"sys",
                     },
                     test: {
                         check: !!test? "checked": "skipped",
@@ -139,6 +143,7 @@ export function generate(){
                         messages: test?.messages
                     }
                 }
+                fs.writeFileSync( Path.join( home, "psm.sql" ),  core )
                 fs.writeFileSync( Path.join( home, "psm.yml" ), yaml.stringify(psm, null, {
                     version: "next",
                 }) )

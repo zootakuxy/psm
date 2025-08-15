@@ -105,8 +105,19 @@ export interface MigrationOptions {
 
 export interface PSMMigrationOptions {
     check:string,
+    core:string,
     url:string,
     migrate:string
+}
+
+export interface Migrated {
+    sid:string,
+    date: Date
+}
+
+export interface PSMMigratedOptions {
+    url:string,
+    sys:string
 }
 
 export interface PSMMigrationResult {
@@ -116,16 +127,34 @@ export interface PSMMigrationResult {
 }
 
 
-export type PSMGenerator = ( opts:PSMParserOptions )=>{ check():string, migrate():string}
-export type PSMMigrator = ( opts:PSMMigrationOptions )=>{ test():Promise<PSMMigrationResult>, migrate():Promise<PSMMigrationResult>}
+export interface PSMGenerator {
+    migrate():string,
+    check():string,
+    core():string,
+}
+
+export interface PSMMigrated {
+    messages:string[]
+    error?:any
+    success?:boolean
+    migrated?:Migrated[]
+}
+
+export interface PSMMigrator {
+    core():Promise<PSMMigrationResult>,
+    test():Promise<PSMMigrationResult>,
+    migrate():Promise<PSMMigrationResult>,
+}
 export interface PSMDriver {
-    generator:PSMGenerator,
-    migrator:PSMMigrator,
+    migrated:( opts:PSMMigratedOptions )=>Promise<PSMMigrated>,
+    generator:( opts:PSMParserOptions )=>PSMGenerator,
+    migrator:( opts:PSMMigrationOptions ) =>PSMMigrator,
     prepare: ( model:ModelOptions )=>Promise<any>|void
 }
 
 export interface DriverConfigs {
     driver:string,
     url:string,
+    sys:string,
 }
 

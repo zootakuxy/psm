@@ -3,7 +3,7 @@ import {migrate, MigrateOptions} from "../../tools/migrate";
 
 
 const command:CommandModule<MigrateOptions, MigrateOptions> = {
-    command: "migrate commit",
+    command: "commit",
     describe: "Migrate next schema structure into dev environment",
     builder: args => {
         args.options( "schema", {
@@ -24,10 +24,11 @@ const command:CommandModule<MigrateOptions, MigrateOptions> = {
         return args;
     },
     handler:( argv) =>{
-        console.log( argv )
-        // migrate(argv).then( value =>  {
-        // }).catch( reason => {
-        // })
+        migrate(argv).then( value =>  {
+            console.log( "Commited!")
+        }).catch( reason => {
+            console.error( reason)
+        })
     }
 }
 
