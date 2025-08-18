@@ -30,10 +30,10 @@ In your `schema.prisma` file, configure the PSM generator to generate the SQL fi
 
 ```prisma
 generator psm {
-provider = "psm generate"
-output = "./psm/"
-driver = "@prisma-psm/pg"
-url = env("DATABASE_URL")
+    provider = "psm generate"
+    output = "./psm/"
+    driver = "@prisma-psm/pg"
+    url = env("DATABASE_URL")
 }
 ```
 
