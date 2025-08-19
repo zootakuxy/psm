@@ -1,15 +1,13 @@
 import * as fs from "node:fs";
-import * as yaml from "yaml";
 import * as Path from "node:path";
+import * as yaml from "yaml";
 import {PSMConfigFile} from "../configs";
 import {PSMDriver} from "../driver";
 import { spawnSync } from "node:child_process";
-import moment from "moment/moment";
+import {fetch} from "./deploy";
+import chalk from "chalk";
+import {psmLockup} from "./common";
 
-const prisma = [
-    `${process.cwd()}/schema.prisma`,
-    `${process.cwd()}/prisma/schema.prisma`,
-];
 
 export interface MigrateOptions {
     schema?:string
@@ -17,7 +15,7 @@ export interface MigrateOptions {
     label?:string
     "generate-command":string
 }
-export async function migrate( opts:MigrateOptions ) {
+export async function commit(opts:MigrateOptions ) {
     require('dotenv').config();
     if( opts.generate ) {
         let command = opts["generate-command"];
@@ -26,44 +24,21 @@ export async function migrate( opts:MigrateOptions ) {
             cwd: process.cwd()
         });
     }
-    let schema = opts.schema;
-    if( !schema ) {
-        schema = prisma.find( value => {
-            return fs.existsSync( value );
-        })
-    }
-    if( !schema ) {
-        return console.error( "Migrate error: schema.prisma file not found!" );
-    }
 
-    console.log(`PSM migrate base do schema ${schema}`);
-
-    const home = Path.dirname( schema );
-    const psm_yml = Path.join( home, "psm.yml" );
-    const psm_sql = Path.join( home, "psm.sql");
-    if( !fs.existsSync( psm_yml ) ) {
-        return console.error( "Migrate error: psm.yml file not found!" );
-    }
-    if( !fs.existsSync( psm_sql ) ) {
-        return console.error( "Migrate error: psm.sql file not found!" );
-    }
-
-    console.log(`PSM migrate using ${psm_yml}`);
-    const psm = yaml.parse( fs.readFileSync( psm_yml ).toString() ) as PSMConfigFile;
+    const { psm, psm_sql, driver, home } = await psmLockup({ schema: opts.schema });
     const next = Path.join( psm.psm.output, "next/migration.next.sql");
     const check = Path.join( psm.psm.output, "next/migration.next.check.sql");
 
     if( !fs.existsSync( check) ) {
-        return console.error( "Migrate error: next/migration.next.check.sql file not found!" );
+        throw new Error( "Migrate error: next/migration.next.check.sql file not found!" );
     }
     if( !fs.existsSync( next) ) {
-        return console.error(  "Migrate error: next/migration.next.sql file not found!" );
+        throw new Error(  "Migrate error: next/migration.next.sql file not found!" );
     }
 
 
-    const driver = await import( psm.psm.driver ) as PSMDriver;
     const migrator = driver.migrator({
-        url: process.env[psm.psm.url],
+        url: process.env[ psm.psm.url ],
         migrate: fs.readFileSync( next ).toString(),
         check: fs.readFileSync( check ).toString(),
         core: fs.readFileSync( psm_sql ).toString(),
@@ -75,7 +50,24 @@ export async function migrate( opts:MigrateOptions ) {
         result.messages.forEach( error => {
             console.error( error );
         });
-        return console.error( "Migrate error: Core failed!" );
+        throw new Error( "Migrate error: Core failed!" );
+    }
+
+    const fetchResponse = await fetch({
+        psm: psm,
+        driver: driver,
+        home: home
+    });
+
+    if( fetchResponse.error ) {
+        throw fetchResponse.error;
+    }
+
+    const noPulled = fetchResponse.revs.filter( n=> !n.pulled );
+
+
+    if( noPulled.length ) {
+        throw new Error( `Commit not pulled already exists! Please run ${chalk.bold("psm deploy")} first!` );
     }
 
     result = await migrator.test();
@@ -84,7 +76,7 @@ export async function migrate( opts:MigrateOptions ) {
         result.messages.forEach( error => {
             console.error( error );
         });
-        return console.error( "Migrate error: Check shadow failed!" );
+        throw new Error( "Migrate error: Check shadow failed!" );
     }
 
 
@@ -94,7 +86,7 @@ export async function migrate( opts:MigrateOptions ) {
         result.messages.forEach( error => {
             console.error( error );
         });
-        return console.error( "Migrate error: Commit migration failed!" );
+        throw new Error( "Migrate error: Commit migration failed!" );
     }
 
     const moment = require('moment');

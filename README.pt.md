@@ -89,7 +89,7 @@ O PSM usa um esquema shadow temporário para garantir segurança dos dados:
 4. Aplica as constraints (chaves, índices, relacionamentos) nas tabelas temporárias.
 5. Se na validação (check) tudo passar:
     - Remove o schema shadow e as tabelas temporárias.
-6. Se na aplicação (migrate next) tudo passar:
+6. Se na aplicação (commit next) tudo passar:
     - Remove as tabelas reais.
     - Move as tabelas temporárias do schema shadow para o schema final.
     - Renomeia as tabelas temporárias para os nomes reais.

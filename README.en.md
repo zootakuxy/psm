@@ -30,10 +30,10 @@ In your `schema.prisma` file, configure the PSM generator to generate the SQL fi
 
 ```prisma
 generator psm {
-provider = "psm generate"
-output = "./psm/"
-driver = "@prisma-psm/pg"
-url = env("DATABASE_URL")
+  provider = "psm generate"
+  output = "./psm/"
+  driver = "@prisma-psm/pg"
+  url = env("DATABASE_URL")
 }
 ```
 
@@ -85,7 +85,7 @@ PSM uses a temporary shadow schema to ensure data security:
 4. Applies constraints (keys, indexes, relationships) to the temporary tables.
 5. If everything passes during validation (check):
 - Removes the shadow schema and temporary tables.
-6. If everything passes during application (migrate next):
+6. If everything passes during application (commit next):
 - Removes the real tables.
 - Moves the temporary tables from the shadow schema to the final schema.
 - Renames the temporary tables to their real names.

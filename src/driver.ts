@@ -73,6 +73,7 @@ export interface PSMModel {
             apply?:"ALWAYS"|"WHEN"|"WHEN_EXCEPTION",
             from?: "query"|"query:linked"|"relation"|"model"
             expression?:string
+            exists?:string
             when?:string
         }
     }

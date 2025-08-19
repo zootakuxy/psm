@@ -1,5 +1,5 @@
 import {CommandModule} from "yargs";
-import {migrate} from "../../tools/migrate";
+import {commit} from "../../tools/commit";
 import {check} from "../../tools/check";
 
 

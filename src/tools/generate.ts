@@ -146,7 +146,7 @@ export function generate(){
                 fs.writeFileSync( Path.join( home, "psm.sql" ),  core )
                 fs.writeFileSync( Path.join( home, "psm.yml" ), yaml.stringify(psm, null, {
                     version: "next",
-                }) )
+                }))
             } catch (e){
                 console.error( "console.error", e );
                 throw e

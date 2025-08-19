@@ -1,5 +1,5 @@
 import {CommandModule} from "yargs";
-import {migrate, MigrateOptions} from "../../tools/migrate";
+import {commit, MigrateOptions} from "../../tools/commit";
 
 
 const command:CommandModule<MigrateOptions, MigrateOptions> = {
@@ -24,7 +24,7 @@ const command:CommandModule<MigrateOptions, MigrateOptions> = {
         return args;
     },
     handler:( argv) =>{
-        migrate(argv).then( value =>  {
+        commit(argv).then(value =>  {
             console.log( "Commited!")
         }).catch( reason => {
             console.error( reason)
