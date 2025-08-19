@@ -104,16 +104,16 @@ export async function fetch(opts:FetchOptions){
         };
     }
 
-    const missingPreview = revs.filter( (n, i) => {
+    const missedPreviews = revs.filter( (n, i) => {
         return (!!n.psm.migration.preview && !revs.find( p => p.psm.migration.revision === n.psm.migration.preview))
             || ( i > 0 && !n.psm.migration.preview)
     });
 
-    if( !!missingPreview.length){
-        const missings = missingPreview.map( n=> `${n.psm.psm.migration} - ${n.psm.migration.label} at ${n.psm.migration.instate}`  );
+    if( !!missedPreviews.length){
+        const missed = missedPreviews.map(n=> `${n.psm.psm.migration} - ${n.psm.migration.label} at ${n.psm.migration.instate}`  );
         return {
             revs: revs,
-            error: new Error(`MISSING PREVIEW migration for...\n ${missings.join("")}`),
+            error: new Error(`MISSING PREVIEW migration for...\n ${missed.join(", ")}`),
         };
     }
 
