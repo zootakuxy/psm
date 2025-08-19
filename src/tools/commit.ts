@@ -2,7 +2,6 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import * as yaml from "yaml";
 import {PSMConfigFile} from "../configs";
-import {PSMDriver} from "../driver";
 import { spawnSync } from "node:child_process";
 import {fetch} from "./deploy";
 import chalk from "chalk";

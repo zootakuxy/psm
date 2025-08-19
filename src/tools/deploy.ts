@@ -12,10 +12,6 @@ export interface DeployOptions {
     label?:string
     "generate-command":string
 }
-const prisma = [
-    `${process.cwd()}/schema.prisma`,
-    `${process.cwd()}/prisma/schema.prisma`,
-];
 
 const TAG = "PSM DEPLOY >"
 
