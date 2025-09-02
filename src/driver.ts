@@ -5,7 +5,6 @@ export interface PSMField {
     }
 }
 
-
 export interface UniqueOptions {
     name:string,
     fields:string[]
@@ -146,11 +145,71 @@ export interface PSMMigrator {
     test():Promise<PSMMigrationResult>,
     migrate():Promise<PSMMigrationResult>,
 }
+
+export interface QueryBuilderResult {
+    sql:string,
+    template:string[],
+    values:any
+    push( ...builders:QueryBuilderResult[] ):void
+}
+
+export type ScriptLine = {
+    line:number,
+    filename: string,
+    error:Error,
+    column:number,
+    func:string
+}
+
+export type RevisionProps<Props extends {[p in keyof Props]:Props[p]}> = Props
+export type RevisionWhen<Props> = boolean|( (props:RevisionProps<Props>)=>boolean)|( (props:RevisionProps<Props>)=>Promise<boolean>);
+
+export interface RegistryOptions <Props>{
+    identifier?: string;
+    connection?: string|"default"|"standard"|"superuser";
+    unique?: boolean;
+    force?: string;
+    flags?: string[];
+    level?: "critical" | "normal" | "optional";
+    line?:ScriptLine,
+    when?:RevisionWhen<Props>
+}
+
+export interface SimpleFile {
+    filename: string;
+}
+
+export type PatchOptions<Props> = RegistryOptions<Props> & {
+    module?: NodeModule | SimpleFile
+}
+// Define o tipo de ouvinte de revisão que inclui tratamento de atualização
+export type RevisionListener = {
+    onRegister?(error: Error, onRelease: () => void): void;
+}
+
+type SQLTemplate = ( sqlTemplate:TemplateStringsArray, ...values:any[] ) => QueryBuilderResult & {
+    sql:SQLTemplate
+    joins( ...builders:QueryBuilderResult[] ):void
+}
+
+export interface SqlPatch <Props>{
+    opts:RegistryOptions<Props> & PatchOptions<Props>
+    str: string | QueryBuilderResult;
+    values: any[] | RevisionListener;
+    listener?: RevisionListener;
+    line:ScriptLine
+}
+
+
 export interface PSMDriver {
     migrated:( opts:PSMMigratedOptions )=>Promise<PSMMigrated>,
     generator:( opts:PSMParserOptions )=>PSMGenerator,
     migrator:( opts:PSMMigrationOptions ) =>PSMMigrator,
-    prepare: ( model:ModelOptions )=>Promise<any>|void
+    prepare: ( model:ModelOptions )=>Promise<any>|void,
+    sql:SQLTemplate,
+    joins( ...builders:QueryBuilderResult[] ):void
+    patch <Props>(opts:PatchOptions<Props>, sql:QueryBuilderResult, listener?: RevisionListener):SqlPatch<Props>
+    patchSQL <Props>(opts?:PatchOptions<Props>, listener?: RevisionListener):SQLTemplate
 }
 
 export interface DriverConfigs {

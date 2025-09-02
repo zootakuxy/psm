@@ -9,7 +9,7 @@ const command:CommandModule = {
         return args;
     },
     handler: args => {
-        generate();
+        generate()
     }
 }
 

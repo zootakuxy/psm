@@ -80,7 +80,7 @@ export interface FetchOptions {
     psm:PSMConfigFile
 }
 export async function fetch(opts:FetchOptions){
-    const revisions = Path.join( opts.home, `psm/revisions/definition`);
+    const revisions = Path.join( opts.home, `psm/revisions/schema`);
     let revs = fs.readdirSync( revisions )
         .filter( n => fs.statSync( Path.join( revisions, n)).isDirectory() )
         .map( n => {

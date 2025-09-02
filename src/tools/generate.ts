@@ -31,8 +31,7 @@ export function generate(){
             }
         },
         async onGenerate(options: GeneratorOptions) {
-            try{
-
+            try {
                 const output = options.generator.output?.value || "./psm";
                 const home = Path.dirname( options.schemaPath );
                 const definition = Path.join( output, "definitions");
@@ -49,6 +48,7 @@ export function generate(){
                 const migration = rand();
                 const configs:DriverConfigs = options.generator.config as any;
                 const url = process.env[configs.url] as string;
+
 
 
                 const driver = await import( configs.driver ) as PSMDriver;
@@ -83,7 +83,10 @@ export function generate(){
                     sys: configs.sys||"sys",
                 };
 
+
                 const generator = driver.generator(opts);
+
+
 
                 const check = generator.check();
                 const migrate = generator.migrate();
