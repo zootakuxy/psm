@@ -46,6 +46,10 @@ export async function deploy( opts: DeployOptions) {
         throw  pullResponse.error;
     }
 
+    if( !pullResponse.revs?.length ) {
+        throw new Error(`No migrate commited! Use ${ chalk.bold("psm migrate commit")} first!`);
+    }
+
     const revs = pullResponse.revs;
 
     for (let i = 0; i < revs.length; i++) {
@@ -99,8 +103,8 @@ export async function fetch(opts:FetchOptions){
 
     if( !revs.length ){
         return {
-            error: new Error(`No migrate commited! Use ${ chalk.bold("psm migrate commit")} first!`),
             revs: revs,
+
         };
     }
 

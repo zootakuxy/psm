@@ -7,6 +7,43 @@ import {fetch} from "./deploy";
 import chalk from "chalk";
 import {psmLockup} from "./common";
 
+function isGitRepo(cwd: string) {
+    const res = spawnSync("git", ["rev-parse", "--is-inside-work-tree"], {
+        cwd,
+        encoding: "utf-8",
+    });
+    return res.status === 0 && res.stdout.trim() === "true";
+}
+
+function gitAddPath(cwd: string, targetPath: string) {
+    try {
+        if (!isGitRepo(cwd)) {
+            console.log(chalk.gray("Repositório git não detectado; ignorando 'git add'."));
+            return;
+        }
+
+        const relPath = Path.relative(cwd, targetPath);
+        const addTarget = relPath.startsWith("..") ? targetPath : relPath;
+
+        const addRes = spawnSync("git", ["add", addTarget], {
+            cwd,
+            stdio: "inherit",
+        });
+
+        if (addRes.status !== 0) {
+            console.warn(chalk.yellow(`Aviso: 'git add' falhou para ${addTarget}.`));
+        } else {
+            console.log(chalk.green(`✔ Adicionado ao git: ${addTarget}`));
+        }
+    } catch (err: any) {
+        console.warn(
+            chalk.yellow("Aviso: não foi possível adicionar ao git."),
+            err?.message ?? err,
+        );
+    }
+}
+
+
 
 export interface MigrateOptions {
     schema?:string
@@ -104,11 +141,11 @@ export async function commit(opts:MigrateOptions ) {
     }
     const nextRev = Path.join( home, `psm/revisions/schema/${psm.migration.instate}${label}`);
 
-
     fs.mkdirSync( nextRev, { recursive: true });
     fs.renameSync( next, Path.join( nextRev, "migration.sql" ) );
     fs.writeFileSync(  Path.join( nextRev, "psm.yml" ), yaml.stringify( psm ) );
     fs.unlinkSync( check );
+    gitAddPath(home || process.cwd(), nextRev);
 }
 
 
