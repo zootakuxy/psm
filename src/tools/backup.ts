@@ -8,6 +8,7 @@ import chalk from "chalk";
 
 import {psmLockup} from "./common";
 import {gitAddPath, sanitizeLabel} from "../utils/fs";
+import moment from "moment/moment";
 
 export interface BackupOptions {
     schema?: string;
@@ -19,7 +20,7 @@ export interface BackupOptions {
 export async function backup(opts: BackupOptions) {
     require('dotenv').config();
 
-    const { psm, psm_sql, driver, home } = await psmLockup({ schema: opts.schema });
+    const { psm, psm_sql, driver, home, schema } = await psmLockup({ schema: opts.schema });
 
     const migrator = driver.migrator({
         url: process.env[psm.psm.url],
@@ -33,7 +34,8 @@ export async function backup(opts: BackupOptions) {
     if (dump.error) throw dump.error;
 
     const moment = require('moment');
-    const instant = moment().format('YYYYMMDDHHmmss');
+    const now = moment();
+    const instant = now.format('YYYYMMDDHHmmss');
     const label = opts.label ? ` - ${sanitizeLabel(opts.label)}` : '';
 
     const compressionLevel = opts.level ?? 9; // nível de compressão padrão 9
@@ -43,6 +45,14 @@ export async function backup(opts: BackupOptions) {
     fs.mkdirSync(tmpDir, { recursive: true });
     const backupFile = Path.join(tmpDir, 'backup.sql');
     fs.writeFileSync(backupFile, dump.output);
+    fs.writeFileSync(Path.join(tmpDir, 'README'), `
+        Label  : ${opts.label}
+        Level  : ${opts.level}
+        Git Add: ${ opts.add }
+        Instante: ${  now.toISOString() }
+        Driver: ${  psm.psm.driver }
+        Scheme: ${  schema }
+    `.split("\n").filter( value => !!value).join("\n"));
 
     // Arquivo final .tar.gz
     const archiveName = Path.join(home, `psm/backup/${instant}${label}.tar.gz`);
