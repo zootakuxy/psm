@@ -1,7 +1,5 @@
 import {CommandModule} from "yargs";
-import {commit, MigrateOptions} from "../../tools/commit";
 import {backup, BackupOptions} from "../../tools/backup";
-
 
 const command:CommandModule<BackupOptions, BackupOptions> = {
     command: "backup",
@@ -10,6 +8,9 @@ const command:CommandModule<BackupOptions, BackupOptions> = {
         args.options( "schema", {
             type: "string",
             alias: "s"
+        }).options( "add", {
+            type: "boolean",
+            describe: "Adicionar no git"
         }).options( "label", {
             type: "string",
             alias: "l",

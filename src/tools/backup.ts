@@ -11,6 +11,7 @@ import {gitAddPath, sanitizeLabel} from "../utils/fs";
 
 export interface BackupOptions {
     schema?: string;
+    add?: boolean;
     label?: string;
     level?: number; // novo parâmetro de compressão
 }
@@ -62,6 +63,6 @@ export async function backup(opts: BackupOptions) {
     fs.rmSync(tmpDir, { recursive: true, force: true });
 
     // Adiciona o .tar.gz ao git
-    gitAddPath(home || process.cwd(), archiveName);
+    if( opts.add )gitAddPath(home || process.cwd(), archiveName);
 }
 
