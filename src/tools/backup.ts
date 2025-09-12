@@ -12,6 +12,7 @@ import {gitAddPath, sanitizeLabel} from "../utils/fs";
 export interface BackupOptions {
     schema?: string;
     label?: string;
+    level?: number; // novo parâmetro de compressão
 }
 
 export async function backup(opts: BackupOptions) {
@@ -34,21 +35,25 @@ export async function backup(opts: BackupOptions) {
     const instant = moment().format('YYYYMMDDHHmmss');
     const label = opts.label ? ` - ${sanitizeLabel(opts.label)}` : '';
 
+    const compressionLevel = opts.level ?? 9; // nível de compressão padrão 9
+
+    // Caminho temporário do arquivo
     const tmpDir = Path.join(home, `psm/backup/tmp-${instant}`);
     fs.mkdirSync(tmpDir, { recursive: true });
-    fs.writeFileSync(Path.join(tmpDir, 'backup.sql'), dump.output);
+    const backupFile = Path.join(tmpDir, 'backup.sql');
+    fs.writeFileSync(backupFile, dump.output);
 
+    // Arquivo final .tar.gz
     const archiveName = Path.join(home, `psm/backup/${instant}${label}.tar.gz`);
 
+    // Compacta **somente o arquivo backup.sql** (sem nível extra)
     await tar.c(
         {
-            gzip: {
-                level: 9
-            },
+            gzip: { level: compressionLevel },
             file: archiveName,
-            cwd: Path.dirname(tmpDir)
+            cwd: tmpDir
         },
-        [Path.basename(tmpDir)]
+        ['backup.sql']
     );
 
     console.log(chalk.green(`✔ Backup gerado: ${archiveName}`));
@@ -59,3 +64,4 @@ export async function backup(opts: BackupOptions) {
     // Adiciona o .tar.gz ao git
     gitAddPath(home || process.cwd(), archiveName);
 }
+

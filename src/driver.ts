@@ -140,10 +140,16 @@ export interface PSMMigrated {
     migrated?:Migrated[]
 }
 
+export interface PSMDumpResponse {
+    error?:Error,
+    output?:string
+}
+
 export interface PSMMigrator {
     core():Promise<PSMMigrationResult>,
     test():Promise<PSMMigrationResult>,
     migrate():Promise<PSMMigrationResult>,
+    dump():Promise<PSMDumpResponse>,
 }
 
 export interface QueryBuilderResult {
@@ -206,10 +212,10 @@ export interface PSMDriver {
     generator:( opts:PSMParserOptions )=>PSMGenerator,
     migrator:( opts:PSMMigrationOptions ) =>PSMMigrator,
     prepare: ( model:ModelOptions )=>Promise<any>|void,
-    sql:SQLTemplate,
-    joins( ...builders:QueryBuilderResult[] ):void
-    patch <Props>(opts:PatchOptions<Props>, sql:QueryBuilderResult, listener?: RevisionListener):SqlPatch<Props>
-    patchSQL <Props>(opts?:PatchOptions<Props>, listener?: RevisionListener):SQLTemplate
+    // sql:SQLTemplate,
+    // joins( ...builders:QueryBuilderResult[] ):void
+    // patch <Props>(opts:PatchOptions<Props>, sql:QueryBuilderResult, listener?: RevisionListener):SqlPatch<Props>
+    // patchSQL <Props>(opts?:PatchOptions<Props>, listener?: RevisionListener):SQLTemplate
 }
 
 export interface DriverConfigs {

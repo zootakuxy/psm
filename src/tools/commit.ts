@@ -1,47 +1,19 @@
+// filename: src/tools/commit.ts
+
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import * as yaml from "yaml";
-import {PSMConfigFile} from "../configs";
-import { spawnSync } from "node:child_process";
-import {fetch} from "./deploy";
+import * as tar from "tar";
 import chalk from "chalk";
+import {PSMConfigFile} from "../configs";
+import * as cp from "node:child_process";
+import {fetch} from "./deploy";
 import {psmLockup} from "./common";
+import {getLatestFolder, gitAddPath, sanitizeLabel} from "../utils/fs";
 
-function isGitRepo(cwd: string) {
-    const res = spawnSync("git", ["rev-parse", "--is-inside-work-tree"], {
-        cwd,
-        encoding: "utf-8",
-    });
-    return res.status === 0 && res.stdout.trim() === "true";
-}
 
-function gitAddPath(cwd: string, targetPath: string) {
-    try {
-        if (!isGitRepo(cwd)) {
-            console.log(chalk.gray("Repositório git não detectado; ignorando 'git add'."));
-            return;
-        }
 
-        const relPath = Path.relative(cwd, targetPath);
-        const addTarget = relPath.startsWith("..") ? targetPath : relPath;
 
-        const addRes = spawnSync("git", ["add", addTarget], {
-            cwd,
-            stdio: "inherit",
-        });
-
-        if (addRes.status !== 0) {
-            console.warn(chalk.yellow(`Aviso: 'git add' falhou para ${addTarget}.`));
-        } else {
-            console.log(chalk.green(`✔ Adicionado ao git: ${addTarget}`));
-        }
-    } catch (err: any) {
-        console.warn(
-            chalk.yellow("Aviso: não foi possível adicionar ao git."),
-            err?.message ?? err,
-        );
-    }
-}
 
 
 
@@ -56,7 +28,7 @@ export async function commit(opts:MigrateOptions ) {
     if( opts.generate ) {
         let command = opts["generate-command"];
         if( !command) command = "prisma generate"
-        spawnSync( "npx", [ ...command.split(" ") ], {
+        cp.spawnSync( "npx", [ ...command.split(" ") ], {
             cwd: process.cwd()
         });
     }
@@ -115,6 +87,10 @@ export async function commit(opts:MigrateOptions ) {
         throw new Error( "Migrate error: Check shadow failed!" );
     }
 
+    const dump = await migrator.dump();
+    if( dump.error ){
+        throw dump.error;
+    }
 
     result = await migrator.migrate();
     if( !result.success ) {
@@ -143,27 +119,27 @@ export async function commit(opts:MigrateOptions ) {
 
     fs.mkdirSync( nextRev, { recursive: true });
     fs.renameSync( next, Path.join( nextRev, "migration.sql" ) );
-    fs.writeFileSync(  Path.join( nextRev, "psm.yml" ), yaml.stringify( psm ) );
+    fs.writeFileSync( Path.join( nextRev, "psm.yml" ), yaml.stringify( psm ) );
+    fs.writeFileSync( Path.join(nextRev, "backup.sql"), dump.output );
+
     fs.unlinkSync( check );
-    gitAddPath(home || process.cwd(), nextRev);
-}
 
+    const archiveName = Path.join(home || process.cwd(), `psm/revisions/schema/${psm.migration.instate}${label}.tar.gz`);
 
-// Função para obter a pasta com maior instante
-function getLatestFolder(basePath:string) {
-    if (!fs.existsSync(basePath)) return null;
-    const dirs = fs.readdirSync(basePath, { withFileTypes: true })
-        .filter(d => d.isDirectory())
-        .map(d => d.name)
-        .filter(name => /^\d{14}( - .+)?$/.test(name))
-        .sort((a, b) => b.localeCompare(a));
-    return dirs[0] || null;
-}
+    await tar.c(
+        {
+            gzip: {
+                level: 9
+            },
+            file: archiveName,
+            cwd: Path.dirname(nextRev)
+        },
+        [Path.basename(nextRev)]
+    );
 
-function sanitizeLabel( label:string ) {
-    return label
-        .replace(/[<>:"/\\|?*\x00-\x1F]/g, '') // remove caracteres inválidos no Windows
-        .replace(/[\u{0080}-\u{FFFF}]/gu, '')  // remove caracteres não ASCII (opcional)
-        .trim()
-        .replace(/\s+/g, ' ');                 // normaliza espaços
+    console.log(chalk.green(`✔ Migration compactada: ${archiveName}`));
+
+    fs.rmSync(nextRev, { recursive: true, force: true });
+
+    gitAddPath(home || process.cwd(), archiveName );
 }
