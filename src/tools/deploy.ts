@@ -145,8 +145,8 @@ export async function fetch(opts:FetchOptions){
         let label = `RevNo ${ chalk.bold(next.psm.migration.revision)}${pl}commited at ${next.psm.migration.instate}`;
         const mig  = migrated.migrated.find( value => value.sid === next.psm.psm.migration );
         next.label = label;
-        next.date = mig.date;
         if( !!mig ) {
+            next.date = mig.date;
             next.message.push(`${label} is migrated at ${mig.date}`);
             next.pulled = true;
         }
