@@ -64,7 +64,7 @@ export async function backup(opts: BackupOptions) {
             file: archiveName,
             cwd: tmpDir
         },
-        ['backup.sql']
+        ['backup.sql', "README"]
     );
 
     console.log(chalk.green(`✔ Backup gerado: ${archiveName}`));
