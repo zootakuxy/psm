@@ -46,13 +46,13 @@ export async function backup(opts: BackupOptions) {
     const backupFile = Path.join(tmpDir, 'backup.sql');
     fs.writeFileSync(backupFile, dump.output);
     fs.writeFileSync(Path.join(tmpDir, 'README'), `
-        Label  : ${opts.label}
-        Level  : ${opts.level}
-        Git Add: ${ opts.add }
+        Label   : ${opts.label}
+        Level   : ${compressionLevel}
+        Git Add : ${ opts.add }
         Instante: ${  now.toISOString() }
-        Driver: ${  psm.psm.driver }
-        Scheme: ${  schema }
-    `.split("\n").filter( value => !!value).join("\n"));
+        Driver  : ${  psm.psm.driver }
+        Scheme  : ${  schema }
+    `.split("\n").map( value => value.trim()).filter( value => !!value).join("\n"));
 
     // Arquivo final .tar.gz
     const archiveName = Path.join(home, `psm/backup/${instant}${label}.tar.gz`);
