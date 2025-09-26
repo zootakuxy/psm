@@ -24,10 +24,11 @@ const command:CommandModule<MigrateOptions, MigrateOptions> = {
         return args;
     },
     handler:( argv) =>{
-        commit(argv).then(value =>  {
-            console.log( "Commited!")
+        commit(argv).then( value => {
+            console.log("Operation finished with success!")
         }).catch( reason => {
-            console.error( reason)
+            console.error( "Operation finished with error!");
+            console.error( reason );
         })
     }
 }

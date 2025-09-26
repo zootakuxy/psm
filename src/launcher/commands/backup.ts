@@ -19,10 +19,11 @@ const command:CommandModule<BackupOptions, BackupOptions> = {
         return args;
     },
     handler:( argv) =>{
-        backup(argv).then(value =>  {
-            console.log( "Commited!")
+        backup(argv).then( value => {
+            console.log("Operation finished with success!")
         }).catch( reason => {
-            console.error( reason)
+            console.error( "Operation finished with error!");
+            console.error( reason );
         })
     }
 }

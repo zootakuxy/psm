@@ -14,7 +14,9 @@ const command:CommandModule<DeployOptions, DeployOptions> = {
     },
     handler:( argv) =>{
         deploy( argv ).then( value => {
+            console.log("Operation finished with success!")
         }).catch( reason => {
+            console.error( "Operation finished with error!");
             console.error( reason );
         })
     }

@@ -3,12 +3,10 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import * as tar from "tar";
-import * as cp from "node:child_process";
 import chalk from "chalk";
 
 import {psmLockup} from "./common";
 import {gitAddPath, sanitizeLabel} from "../utils/fs";
-import moment from "moment/moment";
 
 export interface BackupOptions {
     schema?: string;
